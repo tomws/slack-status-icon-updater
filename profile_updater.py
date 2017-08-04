@@ -2,7 +2,7 @@ import json
 import os
 import requests
 import sys
-import urllib
+import urllib.parse
 import yaml
 
 URL = None
@@ -15,14 +15,14 @@ def set_credentials():
     with open(root_directory + "/credentials.yaml", 'r') as ymlfile:
         token = yaml.load(ymlfile).get("token")
     if not token:
-        print "ERROR: Token not set (see credentials.yaml)"
+        print("ERROR: Token not set (see credentials.yaml)")
         sys.exit(1)
     global URL
     URL = "https://slack.com/api/{method}?token=" + token
 
     authenticated = check_authentication()
     if not authenticated:
-        print "ERROR: Token '{}' is wrong (see credentials.yaml)".format(token)
+        print("ERROR: Token '{}' is wrong (see credentials.yaml)").format(token)
         sys.exit(1)
 
 
@@ -40,7 +40,7 @@ def main():
 def check_authentication():
     url = URL.format(method="auth.test")
     response = requests.get(url)
-    content = json.loads(response.content)
+    content = json.loads(response.content.decode())
     return content.get("ok")
 
 
@@ -49,7 +49,7 @@ def set_status_icon(icon):
     profile = {
         "status_emoji": icon
     }
-    url += '&profile=' + urllib.quote(json.dumps(profile))
+    url += '&profile=' + urllib.parse.quote(json.dumps(profile))
 
     requests.get(url)
     return get_status_icon()
@@ -58,7 +58,7 @@ def set_status_icon(icon):
 def get_status_icon():
     url = URL.format(method="users.profile.get")
     response = requests.get(url)
-    response = json.loads(response.content)
+    response = json.loads(response.content.decode())
     return response.get("profile", {}).get("status_emoji")
 
 
